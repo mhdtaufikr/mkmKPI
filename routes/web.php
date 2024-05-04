@@ -6,6 +6,7 @@ use App\Http\Controllers\DropdownController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RulesController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MstSectionController;
 
 
 /*
@@ -46,6 +47,11 @@ Route::middleware(['auth'])->group(function () {
      Route::patch('/user/update/{user}', [UserController::class, 'update'])->middleware(['checkRole:IT']);
      Route::get('/user/revoke/{user}', [UserController::class, 'revoke'])->middleware(['checkRole:IT']);
      Route::get('/user/access/{user}', [UserController::class, 'access'])->middleware(['checkRole:IT']);
+
+     //MstSection Controller
+     Route::get('/mst/section', [MstSectionController::class, 'index'])->middleware(['checkRole:IT']);
+     Route::post('/mst/section/store', [MstSectionController::class, 'store'])->middleware(['checkRole:IT']);
+     Route::patch('/mst/section/update', [MstSectionController::class, 'update'])->middleware(['checkRole:IT']);
 
 
 });
