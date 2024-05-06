@@ -9,4 +9,8 @@ class MstShop extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
+    public function section()
+    {
+        return $this->belongsTo(MstChecksheetSection::class, 'section_id');
+    }
 }

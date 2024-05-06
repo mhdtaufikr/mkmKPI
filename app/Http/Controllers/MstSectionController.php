@@ -35,10 +35,37 @@ class MstSectionController extends Controller
 
         // Redirect back or return a response as needed
         // For example:
-        return redirect()->back()->with('success', 'Section created successfully.');
+        return redirect()->back()->with('status', 'Section created successfully.');
     }
 
-    public function update(Request $request){
-        dd($request->all());
+    public function update(Request $request)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'id' => 'required|integer',
+            'section' => 'required|string|max:255',
+        ]);
+
+        // Find the record to update by its ID
+        $section = MstChecksheetSection::findOrFail($request->id);
+
+        // Update the section name only if it has been modified
+        if ($section->section_name !== $request->section) {
+            $section->section_name = $request->section;
+        }
+
+        // Check if any attributes have been modified
+        if ($section->isDirty()) {
+            // Save the updated record
+            $section->save();
+
+            // Redirect back or return a response as needed
+            // For example:
+            return redirect()->back()->with('status', 'Section updated successfully.');
+        }
+
+        // No changes detected, redirect back with a message
+        return redirect()->back()->with('failed', 'No changes detected.');
     }
+
 }

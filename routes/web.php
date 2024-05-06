@@ -7,6 +7,10 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RulesController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MstSectionController;
+use App\Http\Controllers\MstShopController;
+use App\Http\Controllers\MstModelController;
+use App\Http\Controllers\MstDowntimeController;
+
 
 
 /*
@@ -52,6 +56,21 @@ Route::middleware(['auth'])->group(function () {
      Route::get('/mst/section', [MstSectionController::class, 'index'])->middleware(['checkRole:IT']);
      Route::post('/mst/section/store', [MstSectionController::class, 'store'])->middleware(['checkRole:IT']);
      Route::patch('/mst/section/update', [MstSectionController::class, 'update'])->middleware(['checkRole:IT']);
+
+     //MstShopController Controller
+     Route::get('/mst/shop', [MstShopController::class, 'index'])->middleware(['checkRole:IT']);
+     Route::post('/mst/shop/store', [MstShopController::class, 'store'])->middleware(['checkRole:IT']);
+     Route::patch('/mst/shop/update', [MstShopController::class, 'update'])->middleware(['checkRole:IT']);
+
+     //MstModelController Controller
+     Route::get('/mst/model', [MstModelController::class, 'index'])->middleware(['checkRole:IT']);
+     Route::post('/mst/model/store', [MstModelController::class, 'store'])->middleware(['checkRole:IT']);
+     Route::patch('/mst/model/update', [MstModelController::class, 'update'])->middleware(['checkRole:IT']);
+
+    //MstDowntimeController Controller
+    Route::get('/mst/downtime', [MstDowntimeController::class, 'index'])->middleware(['checkRole:IT']);
+    Route::post('/mst/downtime/store', [MstDowntimeController::class, 'store'])->middleware(['checkRole:IT']);
+    Route::patch('/mst/downtime/update', [MstDowntimeController::class, 'update'])->middleware(['checkRole:IT']);
 
 
 });

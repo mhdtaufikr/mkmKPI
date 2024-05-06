@@ -59,11 +59,19 @@
                                   <h5 class="modal-title" id="modal-add-label">Add Master Checksheet Section</h5>
                                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <form action="{{ url('/mst/section/store') }}" method="POST">
+                                <form action="{{ url('/mst/downtime/store') }}" method="POST">
                                   @csrf
                                   <div class="modal-body">
+                                    <div class="form-group mb-3">
+                                        <select name="shop_id" id="shop_id" class="form-control">
+                                            <option value="">- Please Select Downtime Category -</option>
+                                            @foreach ($category as $dropdown)
+                                                 <option value="{{$dropdown->name_value }}">{{ $dropdown->name_value}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     <div class="form-group">
-                                      <input type="text" class="form-control" id="section" name="section" placeholder="Enter Checksheet Section" required>
+                                      <input type="text" class="form-control" id="pic" name="pic" placeholder="Enter Checksheet PIC" required>
                                     </div>
                                   </div>
                                   <div class="modal-footer">
@@ -113,7 +121,8 @@
                   <thead>
                   <tr>
                     <th>No</th>
-                    <th>Section Name</th>
+                    <th>Category</th>
+                    <th>PIC</th>
                     <th>Action</th>
                   </tr>
                   </thead>
@@ -124,7 +133,8 @@
                     @foreach ($item as $data)
                     <tr>
                         <td>{{ $no++ }}</td>
-                        <td>{{$data->section_name}}</td>
+                        <td>{{$data->category}}</td>
+                        <td>{{$data->pic}}</td>
 
                         <td>
                             <button title="Edit Section" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modal-update{{ $data->id }}">
@@ -144,13 +154,21 @@
                               <h4 class="modal-title" id="modal-update{{ $data->id }}-label">Edit Section Name</h4>
                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <form action="{{ url('/mst/section/update') }}" method="POST">
+                            <form action="{{ url('/mst/downtime/update') }}" method="POST">
                               @csrf
                               @method('patch')
                               <div class="modal-body">
-                                <div class="form-group">
                                   <input name="id" type="text" value="{{$data->id}}" hidden>
-                                  <input type="text" class="form-control" id="section" name="section" placeholder="Enter Section Name" value="{{ $data->section_name }}">
+                                  <div class="form-group mb-3">
+                                    <select name="shop_id" id="shop_id" class="form-control">
+                                        <option value="{{ $data->category }}">{{ $data->category }}</option>
+                                        @foreach ($category as $downtime)
+                                            <option value="{{ $downtime->name_value }}">{{ $downtime->name_value }}</option>
+                                        @endforeach
+                                      </select>
+                                </div>
+                                <div class="form-group">
+                                  <input type="text" class="form-control" id="pic" name="pic" placeholder="Enter PIC Name" value="{{ $data->pic }}">
                                 </div>
                               </div>
                               <div class="modal-footer">

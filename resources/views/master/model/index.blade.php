@@ -40,7 +40,7 @@
           <div class="col-12">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Master Checksheet Section</h3>
+                <h3 class="card-title">Master Checksheet Model</h3>
               </div>
 
               <!-- /.card-header -->
@@ -56,14 +56,42 @@
                             <div class="modal-dialog">
                               <div class="modal-content">
                                 <div class="modal-header">
-                                  <h5 class="modal-title" id="modal-add-label">Add Master Checksheet Section</h5>
+                                  <h5 class="modal-title" id="modal-add-label">Add Master Checksheet Model</h5>
                                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <form action="{{ url('/mst/section/store') }}" method="POST">
+                                <form action="{{ url('/mst/model/store') }}" method="POST">
                                   @csrf
                                   <div class="modal-body">
+                                    <div class="form-group mb-3">
+                                        <select name="shop_id" id="shop_id" class="form-control">
+                                            <option value="">- Please Select Section -</option>
+                                            @foreach ($shopName as $shop)
+                                                <option value="{{ $shop->id }}">{{ $shop->shop_name }}</option>
+                                            @endforeach
+                                          </select>
+                                    </div>
                                     <div class="form-group">
-                                      <input type="text" class="form-control" id="section" name="section" placeholder="Enter Checksheet Section" required>
+                                    <!-- Input field for item checksheet -->
+                                    <div class="input-group mb-4" id="input-container">
+                                        <input type="text" class="form-control" name="model[]" placeholder="Enter Item model" required>
+                                        <button type="button" id="add-input" class="btn btn-dark">+</button>
+                                    </div>
+
+                                    <script>
+                                        // JavaScript/jQuery
+                                        $(document).ready(function() {
+                                            // Add input field when the "+" button is clicked
+                                            $('#add-input').click(function() {
+                                                $('#input-container').append('<div class="input-group mt-2 mb-2"><input type="text" class="form-control" name="model[]" placeholder="Enter Item Checksheet" required><button type="button" class="btn btn-secondary remove-input">-</button></div>');
+                                            });
+
+                                            // Remove input field when the "-" button is clicked
+                                            $(document).on('click', '.remove-input', function() {
+                                                $(this).closest('.input-group').remove();
+                                            });
+                                        });
+                                    </script>
+
                                     </div>
                                   </div>
                                   <div class="modal-footer">
@@ -113,7 +141,8 @@
                   <thead>
                   <tr>
                     <th>No</th>
-                    <th>Section Name</th>
+                    <th>Model Name</th>
+                    <th>Shop Name</th>
                     <th>Action</th>
                   </tr>
                   </thead>
@@ -124,8 +153,8 @@
                     @foreach ($item as $data)
                     <tr>
                         <td>{{ $no++ }}</td>
-                        <td>{{$data->section_name}}</td>
-
+                        <td>{{$data->model_name}}</td>
+                        <td>{{$data->section->shop_name}}</td>
                         <td>
                             <button title="Edit Section" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modal-update{{ $data->id }}">
                                 <i class="fas fa-edit"></i>
@@ -141,17 +170,25 @@
                         <div class="modal-dialog">
                           <div class="modal-content">
                             <div class="modal-header">
-                              <h4 class="modal-title" id="modal-update{{ $data->id }}-label">Edit Section Name</h4>
+                              <h4 class="modal-title" id="modal-update{{ $data->id }}-label">Edit Shop Name</h4>
                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <form action="{{ url('/mst/section/update') }}" method="POST">
+                            <form action="{{ url('/mst/model/update') }}" method="POST">
                               @csrf
                               @method('patch')
                               <div class="modal-body">
-                                <div class="form-group">
+
                                   <input name="id" type="text" value="{{$data->id}}" hidden>
-                                  <input type="text" class="form-control" id="section" name="section" placeholder="Enter Section Name" value="{{ $data->section_name }}">
+                                  <div class="form-group mb-3">
+                                    <select name="shop_id" id="shop_id" class="form-control">
+                                        <option value="{{ $data->shop_id }}">{{ $data->section->shop_name}}</option>
+                                        @foreach ($shopName as $shop)
+                                             <option value="{{$shop->id }}">{{ $shop->shop_name}}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
+                                <div class="form-group">
+                                <input value="{{$data->model_name}}" type="text" class="form-control" name="shop" placeholder="Enter Item Checksheet" required>
                               </div>
                               <div class="modal-footer">
                                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
@@ -176,7 +213,7 @@
                             @method('delete')
                             <div class="modal-body">
                                 <div class="form-group">
-                                Are you sure you want to delete <label for="Dropdown">{{ $data->section_name }}</label>?
+                                Are you sure you want to delete <label for="Dropdown">{{ $data->shop_name }}</label>?
                                 </div>
                             </div>
                             <div class="modal-footer">
