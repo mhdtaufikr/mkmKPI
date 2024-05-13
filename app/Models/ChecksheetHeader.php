@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class ChecksheetHeader extends Model
 {
-    use HasFactory;
-    protected $guarded = ['id'];
+    public function mstChecksheetSection()
+    {
+        return $this->belongsTo(MstChecksheetSection::class, 'section_id', 'id');
+    }
 }
+

@@ -31,12 +31,15 @@ class MstModelController extends Controller
         DB::beginTransaction();
 
         try {
+             // Check if the model_name already exists within the same shop
+             $existingModel = MstModel::where('model_name', $modelNames)
+             ->where('shop_id', $shopId)
+             ->first();
             // Loop through each model name
             foreach ($modelNames as $modelName) {
-                // Check if the model_name already exists within the same shop
-                $existingModel = MstModel::where('model_name', $modelName)
-                                        ->where('shop_id', $shopId)
-                                        ->first();
+
+
+
 
                 // If the model_name already exists within the same shop, rollback the transaction and return a response
                 if ($existingModel) {

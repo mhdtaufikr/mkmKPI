@@ -59,21 +59,25 @@
                                   <h5 class="modal-title" id="modal-add-label">Add Master Checksheet Section</h5>
                                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <form action="{{ url('/mst/section/store') }}" method="POST">
+                                <form action="{{ url('/checksheet/store/main') }}" method="POST">
                                   @csrf
                                   <div class="modal-body">
                                     <div class="form-group mb-3">
-                                      <input type="text" class="form-control" id="section" name="section" placeholder="Enter Checksheet Section" required>
-                                    </div>
-                                    <div class="form-group mb-3">
-                                        <input type="text" class="form-control" id="dept" name="dept" placeholder="Enter Checksheet Department" required>
-                                      </div>
-                                      <div class="form-group mb-3">
-                                        <input type="text" class="form-control" id="section_dept" name="section_dept" placeholder="Enter Checksheet Section Dept" required>
-                                      </div>
-                                      <div class="form-group mb-3">
-                                        <input type="text" class="form-control" id="no_document" name="no_document" placeholder="Enter Checksheet No.Document" required>
-                                      </div>
+                                        <select name="section_id" id="section_id" class="form-control" required>
+                                            <option value="">- Please Select Checksheet Category -</option>
+                                            @foreach ($category as $section)
+                                                <option value="{{ $section->id }}">{{ $section->section_name }}</option>
+                                            @endforeach
+                                          </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <select name="shift" id="shift" class="form-control" required>
+                                                <option value="">- Please Select Shift -</option>
+                                                @foreach ($dropdown as $shift)
+                                                    <option value="{{ $shift->name_value }}">{{ $shift->name_value }}</option>
+                                                @endforeach
+                                              </select>
+                                            </div>
                                   </div>
                                   <div class="modal-footer">
                                     <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>

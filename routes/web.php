@@ -10,6 +10,7 @@ use App\Http\Controllers\MstSectionController;
 use App\Http\Controllers\MstShopController;
 use App\Http\Controllers\MstModelController;
 use App\Http\Controllers\MstDowntimeController;
+use App\Http\Controllers\ChecksheetController;
 
 
 
@@ -32,7 +33,14 @@ Route::middleware(['auth'])->group(function () {
     //Home Controller
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-     //Dropdown Controller
+    //Checksheet Controller
+    Route::get('/checksheet', [ChecksheetController::class, 'index'])->middleware(['checkRole:IT']);
+    Route::post('/checksheet/store/main', [ChecksheetController::class, 'storeMain'])->middleware(['checkRole:IT']);
+    Route::get('/checksheet/form/{id}', [ChecksheetController::class, 'formChecksheet'])->middleware(['checkRole:IT'])->name('form.checksheet');
+    Route::post('/checksheet/detail/store', [ChecksheetController::class, 'storeForm'])->middleware(['checkRole:IT']);
+
+
+    //Dropdown Controller
      Route::get('/dropdown', [DropdownController::class, 'index'])->middleware(['checkRole:IT']);
      Route::post('/dropdown/store', [DropdownController::class, 'store'])->middleware(['checkRole:IT']);
      Route::patch('/dropdown/update/{id}', [DropdownController::class, 'update'])->middleware(['checkRole:IT']);
