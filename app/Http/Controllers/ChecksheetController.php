@@ -11,6 +11,7 @@ use App\Models\ChecksheetDowntime;
 use App\Models\ChecksheetDetail;
 use App\Models\MstShop;
 use App\Models\MstModel;
+use App\Models\ChecksheetNotGood;
 use DB;
 
 class ChecksheetController extends Controller
@@ -43,6 +44,7 @@ class ChecksheetController extends Controller
         $checksheetHeader->sub_section = $section->section;
         $checksheetHeader->date = now()->toDateString(); // You can change this if needed
         $checksheetHeader->revision = 0; // Set revision to 0
+        $checksheetHeader->status = 0;
         $checksheetHeader->document_no = $section->no_document;
         $checksheetHeader->shift = $request->shift;
         $checksheetHeader->created_by = auth()->user()->name; // Example: Get the current user's name
@@ -110,86 +112,91 @@ class ChecksheetController extends Controller
       }
 
       public function storeForm(Request $request)
-{
-    // Extract data from the request
-    $shopIds = array_flip($request->shop); // Flip the array to make it easier to get shop ids
-    $modelIds = array_flip($request->model); // Flip the array to make it easier to get model ids
-    $downtimeCategories = $request->downtime_category;
-    $planningManpower = $request->man_power_planning;
-    $actualManpower = $request->man_power_actual;
-    $planningProduction = $request->production_planning;
+        {
+            DB::beginTransaction();
 
-    $actualProduction = $request->production_actual;
-    $causes = $request->cause;
-    $actions = $request->action;
+            try {
+                // Assuming the checksheet header ID is provided in the request
+                $headerId = $request->id;
 
-    // Retrieve model ids from the mst_models table based on the model names
-    $models = array_keys($modelIds);
-    $models = MstModel::whereIn('model_name', $models)->get();
+                // 1. Insert data into checksheet_details table
+                foreach ($request->shop as $shop) {
+                    $shopId = DB::table('mst_shops')->where('shop_name', $shop)->value('id');
 
-    // Create a mapping of model names to their corresponding ids
-    $modelIds = $models->pluck('id', 'model_name')->toArray();
+                    $detailId = DB::table('checksheet_details')->insertGetId([
+                        'header_id' => $headerId,
+                        'shop_id' => $shopId,
+                        'planning_manpower' => $request->man_power_planning[$shop][0],
+                        'actual_manpower' => $request->man_power_actual[$shop][0],
+                        'pic' => $request->pic[$shop][0],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
 
-    // Retrieve the shop IDs based on the shop names
-    $shopNames = array_keys($shopIds);
-    $shops = MstShop::whereIn('shop_name', $shopNames)->get();
+                    // 2. Insert data into checksheet_productions table for each model in the shop
+                    foreach ($request->production_planning as $modelName => $planning) {
+                        $modelId = DB::table('mst_models')->where('model_name', $modelName)->value('id');
+                        $modelShopId = DB::table('mst_models')->where('model_name', $modelName)->value('shop_id');
 
-    $shopIds = $shops->pluck('id', 'shop_name')->toArray();
-
-    // Start database transaction
-    DB::beginTransaction();
-
-    try {
-        // Insert data into the checksheet_details table
-        foreach ($shopIds as $shopName => $shopId) {
-            foreach ($modelIds as $modelName => $modelId) {
-                $detail = new ChecksheetDetail();
-                $detail->header_id = $request->id;
-                $detail->shop_id = $shopId;
-                $detail->model_id = $modelId;
-                $detail->planning_manpower = $planningManpower[$shopName][0];
-                $detail->actual_manpower = $actualManpower[$shopName][0];
-                $detail->planning_production = $planningProduction[0];
-                $detail->actual_production = $actualProduction[0];
-                $detail->balance = $planningProduction[0] - $actualProduction[0];
-                $detail->save();
-
-               // Insert data into the checksheet_downtimes table
-                if (isset($downtimeCategories[$modelName])) {
-                    foreach ($downtimeCategories[$modelName] as $downtimeCategory) {
-                        $downtime = new ChecksheetDowntime();
-                        $downtime->detail_id = $detail->id;
-                        $downtime->cause_id = $downtimeCategory; // Assuming $downtimeCategory contains the cause_id
-
-                        // Access the cause and action using the correct keys
-                        $modelKey = array_search($modelName, array_keys($modelIds));
-                        $downtime->problem = $causes[$modelKey]; // Use the model key to access the cause
-                        $downtime->action = $actions[$modelKey]; // Use the model key to access the action
-
-                        $downtime->save();
+                        if ($modelShopId === $shopId) {
+                            DB::table('checksheet_productions')->insert([
+                                'detail_id' => $detailId,
+                                'model_id' => $modelId,
+                                'planning_production' => $planning[0] ?? null,
+                                'actual_production' => $request->production_actual[$modelName][0] ?? null,
+                                'balance' => $request->production_different[$modelName][0] ?? null,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
                     }
                 }
+
+                // 3. Insert downtime data into checksheet_downtimes table
+                foreach ($request->downtime_category as $modelName => $categories) {
+                    $modelId = DB::table('mst_models')->where('model_name', $modelName)->value('id');
+                    $productionIds = DB::table('checksheet_productions')->where('model_id', $modelId)->pluck('id');
+
+                    foreach ($categories as $index => $categoryId) {
+                        foreach ($productionIds as $productionId) {
+                            DB::table('checksheet_downtimes')->insert([
+                                'production_id' => $productionId,
+                                'cause_id' => $categoryId,
+                                'problem' => $request->cause[$modelName][$index] ?? null,
+                                'action' => $request->action[$modelName][$index] ?? null,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }
+                }
+
+                // 4. Insert not good (NG) data into checksheet_not_goods table
+                foreach ($request->production_planning as $modelName => $planning) {
+                    $modelId = DB::table('mst_models')->where('model_name', $modelName)->value('id');
+                    $productionIds = DB::table('checksheet_productions')->where('model_id', $modelId)->pluck('id');
+
+                    foreach ($productionIds as $productionId) {
+                        DB::table('checksheet_not_goods')->insert([
+                            'production_id' => $productionId,
+                            'model_id' => $modelId,
+                            'quantity' => $request->repair[$modelName][0] + $request->reject[$modelName][0] ?? null,
+                            'repair' => $request->repair[$modelName][0] ?? null,
+                            'reject' => $request->reject[$modelName][0] ?? null,
+                            'total' => $request->repair[$modelName][0] + $request->reject[$modelName][0] ?? null,
+                            'remark' => null,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+
+                DB::commit();
+
+                return redirect('/checksheet')->with('status', 'Checksheet data saved successfully.');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return redirect('/checksheet')->with('failed', 'Failed to save checksheet data. Please try again.');
             }
         }
-
-        // Commit transaction
-        DB::commit();
-        dd('berhasil');
-        // Redirect or return a response indicating success
-        return redirect()->back()->with('success', 'Checksheet data saved successfully.');
-    } catch (\Exception $e) {
-        dd($e);
-        // Rollback transaction in case of an error
-        DB::rollback();
-
-        // Log the error or return an error response
-        return redirect()->back()->with('error', 'Failed to save checksheet data. Please try again.');
-    }
-}
-
-
-
-
-
-
 }

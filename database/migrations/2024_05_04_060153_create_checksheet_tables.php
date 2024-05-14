@@ -12,6 +12,9 @@ class CreateChecksheetTables extends Migration
         Schema::create('mst_checksheet_sections', function (Blueprint $table) {
             $table->id();
             $table->string('section_name');
+            $table->string('dept');
+            $table->string('section');
+            $table->string('no_document');
             $table->timestamps();
         });
 
@@ -31,8 +34,8 @@ class CreateChecksheetTables extends Migration
             $table->timestamps();
         });
 
-        // Create checksheet_header table
-        Schema::create('checksheet_header', function (Blueprint $table) {
+        // Create checksheet_headers table
+        Schema::create('checksheet_headers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('section_id')->constrained('mst_checksheet_sections');
             $table->string('department');
@@ -42,17 +45,26 @@ class CreateChecksheetTables extends Migration
             $table->string('document_no');
             $table->string('shift');
             $table->string('created_by');
+            $table->string('status');
             $table->timestamps();
         });
 
-        // Create checksheet_detail table
-        Schema::create('checksheet_detail', function (Blueprint $table) {
+        // Create checksheet_details table
+        Schema::create('checksheet_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('header_id')->constrained('checksheet_header');
+            $table->foreignId('header_id')->constrained('checksheet_headers');
             $table->foreignId('shop_id')->constrained('mst_shops');
-            $table->foreignId('model_id')->constrained('mst_models');
             $table->integer('planning_manpower');
             $table->integer('actual_manpower');
+            $table->string('pic');
+            $table->timestamps();
+        });
+
+        // Create checksheet_productions table
+        Schema::create('checksheet_productions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('detail_id')->constrained('checksheet_details');
+            $table->foreignId('model_id')->constrained('mst_models');
             $table->integer('planning_production');
             $table->integer('actual_production');
             $table->integer('balance');
@@ -67,20 +79,20 @@ class CreateChecksheetTables extends Migration
             $table->timestamps();
         });
 
-        // Create checksheet_downtime table
-        Schema::create('checksheet_downtime', function (Blueprint $table) {
+        // Create checksheet_downtimes table
+        Schema::create('checksheet_downtimes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('detail_id')->constrained('checksheet_detail');
+            $table->foreignId('production_id')->constrained('checksheet_productions');
             $table->foreignId('cause_id')->constrained('mst_downtime_causes');
             $table->string('problem');
             $table->string('action');
             $table->timestamps();
         });
 
-        // Create checksheet_not_good table
-        Schema::create('checksheet_not_good', function (Blueprint $table) {
+        // Create checksheet_not_goods table
+        Schema::create('checksheet_not_goods', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('detail_id')->constrained('checksheet_detail');
+            $table->foreignId('production_id')->constrained('checksheet_productions');
             $table->foreignId('model_id')->constrained('mst_models');
             $table->integer('quantity');
             $table->integer('repair');
@@ -93,15 +105,14 @@ class CreateChecksheetTables extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('checksheet_not_good');
-        Schema::dropIfExists('checksheet_downtime');
+        Schema::dropIfExists('checksheet_not_goods');
+        Schema::dropIfExists('checksheet_downtimes');
         Schema::dropIfExists('mst_downtime_causes');
-        Schema::dropIfExists('checksheet_detail');
-        Schema::dropIfExists('checksheet_header');
+        Schema::dropIfExists('checksheet_productions');
+        Schema::dropIfExists('checksheet_details');
+        Schema::dropIfExists('checksheet_headers');
         Schema::dropIfExists('mst_models');
         Schema::dropIfExists('mst_shops');
         Schema::dropIfExists('mst_checksheet_sections');
     }
 }
-
-

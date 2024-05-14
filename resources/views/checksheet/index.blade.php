@@ -127,9 +127,9 @@
                   <tr>
                     <th>No</th>
                     <th>Checksheet Category</th>
-                    <th>Dept</th>
-                    <th>Section Name</th>
-                    <th>No. Document</th>
+                    <th>Date</th>
+                    <th>Shift</th>
+                    <th>Created By</th>
                     <th>Action</th>
                   </tr>
                   </thead>
@@ -140,10 +140,10 @@
                     @foreach ($item as $data)
                     <tr>
                         <td>{{ $no++ }}</td>
-                        <td>{{$data->section_name}}</td>
-                        <td>{{$data->dept}}</td>
-                        <td>{{$data->section}}</td>
-                        <td>{{$data->no_document}}</td>
+                        <td>{{ $data->section->section_name }}</td>
+                        <td>{{$data->date}}</td>
+                        <td>{{$data->shift}}</td>
+                        <td>{{$data->created_by}}</td>
 
                         <td>
                             <button title="Edit Section" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modal-update{{ $data->id }}">

@@ -11,5 +11,9 @@ class ChecksheetHeader extends Model
     {
         return $this->belongsTo(MstChecksheetSection::class, 'section_id', 'id');
     }
+    public function section()
+    {
+        return $this->belongsTo(MstChecksheetSection::class, 'section_id', 'id');
+    }
 }
 
