@@ -146,9 +146,8 @@
                         <td>{{$data->created_by}}</td>
 
                         <td>
-                            <button title="Edit Section" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modal-update{{ $data->id }}">
-                                <i class="fas fa-edit"></i>
-                              </button>
+                            <a title="Detail Checksheet" href="{{url('/checksheet/detail/'.encrypt($data->id))}}" class="btn btn-info btn-sm me-2"><i class="fas fa-info"></i></a>
+                            <a title="Edit Section" href="{{url('/checksheet/update/'.encrypt($data->id))}}" class="btn btn-primary btn-sm me-2"><i class="fas fa-edit"></i></a>
                             {{-- <button title="Delete Section" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modal-delete{{ $data->id }}">
                                 <i class="fas fa-trash-alt"></i>
                               </button> --}}

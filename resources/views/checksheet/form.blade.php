@@ -65,11 +65,9 @@
                                                                     <table class="table table-bordered table-striped">
                                                                         <thead>
                                                                             <tr>
-                                                                                <th style="width: 120px;" >Model</th>
-                                                                                <th style="width: 280px;" >Production</th>
-                                                                                <th style="width: 250px;">Downtime Category</th>
-                                                                                <th style="width: 150px;">Time</th>
-                                                                                <th>Remarks</th>
+                                                                                <th style="width: 120px;">Model</th>
+                                                                                <th style="width: 280px;">Production</th>
+                                                                                <th colspan="3">Downtime</th>
                                                                                 <th>NG</th>
                                                                             </tr>
                                                                         </thead>
@@ -80,7 +78,7 @@
                                                                                         <input type="hidden" name="model[]" value="{{ $model['model_name'] }}">
                                                                                         <input type="hidden" name="shopAll[]" value="{{ $model['shop_name'] }}">
                                                                                         <td class="text-center">{{ $model['model_name'] }}
-                                                                                            <input type="file" name="picture_ng[{{ $model['model_name'] }}][]"  class="form-control form-control-sm">
+                                                                                            <input type="file" name="picture_ng[{{ $model['model_name'] }}][]" class="form-control form-control-sm">
                                                                                         </td>
                                                                                         <td>
                                                                                             <div style="width: 270px;" class="row">
@@ -91,7 +89,6 @@
                                                                                                 <div class="col-md-4">
                                                                                                     <label>Actual</label>
                                                                                                     <input type="number" name="production_actual[{{ $model['model_name'] }}][]" class="form-control form-control-sm production-actual" style="width: 80px;" value="0" min="0">
-
                                                                                                 </div>
                                                                                                 <div class="col-md-4">
                                                                                                     <label>Different</label>
@@ -99,50 +96,60 @@
                                                                                                 </div>
                                                                                             </div>
                                                                                         </td>
-                                                                                        <td>
-                                                                                            <label>Downtime</label>
-                                                                                            <select name="downtime_category[{{ $model['model_name'] }}][]" class="form-control form-control-sm chosen-select" id="downtime_category_{{ $key }}" multiple>
-                                                                                                @foreach($downtimeCategory as $category)
-                                                                                                    <option value="{{ $category->id }}">{{ $category->category }}</option>
-                                                                                                @endforeach
-                                                                                            </select>
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            <div style="width: 250px;" class="row">
-                                                                                            <div class="col-md-6">
-                                                                                                <label>From</label>
-                                                                                                <input type="time" name="time_from[{{ $model['model_name'] }}][]" class="form-control form-control-sm">
-                                                                                            </div>
-                                                                                            <div class="col-md-6">
-                                                                                                <label>Until</label>
-                                                                                                <input type="time" name="time_until[{{ $model['model_name'] }}][]" class="form-control form-control-sm">
-                                                                                            </div>
-                                                                                            </div>
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            <div class="row">
-                                                                                                <div class="col-md-6">
-                                                                                                    <label>Cause</label>
-                                                                                                    <textarea name="cause[{{ $model['model_name'] }}][]" class="form-control form-control-sm" rows="3"></textarea>
-                                                                                                </div>
-                                                                                                <div class="col-md-6">
-                                                                                                    <label>Action</label>
-                                                                                                    <textarea name="action[{{ $model['model_name'] }}][]" class="form-control form-control-sm" rows="3"></textarea>
+                                                                                        <td colspan="3">
+                                                                                            <div class="downtime-container">
+                                                                                                <div class="row">
+                                                                                                    <div class="col-md-6">
+                                                                                                        <label>Downtime</label><br>
+                                                                                                        <select name="downtime_category[{{ $model['model_name'] }}][]" class="form-control form-control-sm " >
+                                                                                                            <option value="">Select Downtime</option>
+                                                                                                            @foreach($downtimeCategory as $category)
+                                                                                                                <option value="{{ $category->id }}">{{ $category->category }}</option>
+                                                                                                            @endforeach
+                                                                                                        </select>
+                                                                                                        <div class="row">
+                                                                                                            <div class="col-md-6">
+                                                                                                                <label>From</label>
+                                                                                                                <input type="time" name="time_from[{{ $model['model_name'] }}][]" class="form-control form-control-sm">
+                                                                                                            </div>
+                                                                                                            <div class="col-md-6">
+                                                                                                                <label>Until</label>
+                                                                                                                <input type="time" name="time_until[{{ $model['model_name'] }}][]" class="form-control form-control-sm">
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <div class="col-md-6">
+                                                                                                        <div class="row">
+                                                                                                            <div class="col-md-5">
+                                                                                                                <label>Cause</label>
+                                                                                                                <textarea name="cause[{{ $model['model_name'] }}][]" class="form-control form-control-sm" rows="3"></textarea>
+                                                                                                            </div>
+                                                                                                            <div class="col-md-5">
+                                                                                                                <label>Action</label>
+                                                                                                                <textarea name="action[{{ $model['model_name'] }}][]" class="form-control form-control-sm" rows="3"></textarea>
+                                                                                                            </div>
+                                                                                                            <div class="col-md-2">
+                                                                                                                <br>
+                                                                                                                <button type="button" class="btn btn-sm btn-primary add-problem-row mt-2" data-model="{{ $model['model_name'] }}">+</button> <br>
+
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
                                                                                                 </div>
                                                                                             </div>
                                                                                         </td>
                                                                                         <td>
                                                                                             <label>Repair</label>
-                                                                                                    <input type="number" name="repair[{{ $model['model_name'] }}][]" class="form-control form-control-sm production-planning" style="width: 80px;" value="0" min="0">
+                                                                                            <input type="number" name="repair[{{ $model['model_name'] }}][]" class="form-control form-control-sm production-planning" style="width: 80px;" value="0" min="0">
                                                                                             <label>Reject</label>
                                                                                             <input type="number" name="reject[{{ $model['model_name'] }}][]" class="form-control form-control-sm production-planning" style="width: 80px;" value="0" min="0">
-
                                                                                         </td>
                                                                                     </tr>
                                                                                 @endif
                                                                             @endforeach
                                                                         </tbody>
                                                                     </table>
+
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -160,9 +167,64 @@
         </div>
     </div>
 </main>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('.chosen-select').chosen({width:"230px"});
+        // Function to add new problem row
+        $(document).on('click', '.add-problem-row', function() {
+            var model = $(this).data('model');
+            var newRow = `
+                <div class="row mt-3 problem-row">
+                    <div class="col-md-6">
+                        <label>Downtime</label><br>
+                        <select name="downtime_category[${model}][]" class="form-control form-control-sm">
+                            <option value="">Select Downtime</option>
+                            @foreach($downtimeCategory as $category)
+                                <option value="{{ $category->id }}">{{ $category->category }}</option>
+                            @endforeach
+                        </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>From</label>
+                                <input type="time" name="time_from[${model}][]" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-6">
+                                <label>Until</label>
+                                <input type="time" name="time_until[${model}][]" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label>Cause</label>
+                                <textarea name="cause[${model}][]" class="form-control form-control-sm" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-5">
+                                <label>Action</label>
+                                <textarea name="action[${model}][]" class="form-control form-control-sm" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-2">
+                                <br>
+                                <button type="button" class="btn btn-sm btn-primary add-problem-row mt-2" data-model="${model}">+</button> <br>
+                                <button type="button" class="btn btn-sm btn-danger remove-problem-row mt-2">-</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            $(this).closest('.downtime-container').append(newRow);
+        });
+
+        // Function to remove problem row
+        $(document).on('click', '.remove-problem-row', function() {
+            $(this).closest('.problem-row').remove();
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('.chosen-select').chosen({width:"600px"});
 
         // Add change event listener to the select dropdown
         $('.chosen-select').change(function() {

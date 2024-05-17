@@ -164,6 +164,8 @@ class ChecksheetController extends Controller
                                 'cause_id' => $categoryId,
                                 'problem' => $request->cause[$modelName][$index] ?? null,
                                 'action' => $request->action[$modelName][$index] ?? null,
+                                'time_from' => $request->time_from[$modelName][$index] ?? null,
+                                'time_to' => $request->time_until[$modelName][$index] ?? null,
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ]);
@@ -195,8 +197,121 @@ class ChecksheetController extends Controller
 
                 return redirect('/checksheet')->with('status', 'Checksheet data saved successfully.');
             } catch (\Exception $e) {
+                dd($e);
                 DB::rollBack();
                 return redirect('/checksheet')->with('failed', 'Failed to save checksheet data. Please try again.');
             }
+        }
+
+
+        public function showDetail($id)
+        {
+            $id = decrypt($id);
+
+            // Fetch checksheet header data
+            $header = DB::table('checksheet_headers')->where('id', $id)->first();
+
+            $downtimeCategory = MstDowntimeCause::get();
+            // Fetch related checksheet details
+            $details = DB::table('checksheet_details')
+                ->where('header_id', $id)
+                ->get();
+
+            // Fetch related production, downtime, and not good data
+            $productions = DB::table('checksheet_productions')
+                ->whereIn('detail_id', $details->pluck('id'))
+                ->get();
+
+            $downtimes = DB::table('checksheet_downtimes')
+                ->whereIn('production_id', $productions->pluck('id'))
+                ->get();
+
+            $notGoods = DB::table('checksheet_not_goods')
+                ->whereIn('production_id', $productions->pluck('id'))
+                ->get();
+
+            // Format the data for the view
+            $formattedData = [];
+            foreach ($details as $detail) {
+                $shop = DB::table('mst_shops')->where('id', $detail->shop_id)->first();
+                $models = $productions->where('detail_id', $detail->id);
+
+                $formattedData[] = [
+                    'shop_name' => $shop->shop_name,
+                    'planning_manpower' => $detail->planning_manpower,
+                    'actual_manpower' => $detail->actual_manpower,
+                    'pic' => $detail->pic,
+                    'models' => $models->map(function ($model) use ($downtimes, $notGoods) {
+                        return [
+                            'model_id' => $model->model_id,
+                            'planning_production' => $model->planning_production,
+                            'actual_production' => $model->actual_production,
+                            'balance' => $model->balance,
+                            'downtimes' => $downtimes->where('production_id', $model->id),
+                            'not_goods' => $notGoods->where('production_id', $model->id),
+                        ];
+                    }),
+                ];
+            }
+
+            return view('checksheet.show', compact('header', 'formattedData', 'downtimes', 'notGoods','id','downtimeCategory'));
+        }
+
+        public function updateDetail($id)  {
+            $id = decrypt($id);
+
+            // Fetch checksheet header data
+            $header = DB::table('checksheet_headers')->where('id', $id)->first();
+
+            $downtimeCategory = MstDowntimeCause::get();
+
+            // Fetch related checksheet details
+            $details = DB::table('checksheet_details')
+                ->where('header_id', $id)
+                ->get();
+
+            // Fetch related production, downtime, and not good data
+            $productions = DB::table('checksheet_productions')
+                ->whereIn('detail_id', $details->pluck('id'))
+                ->get();
+
+            $downtimes = DB::table('checksheet_downtimes')
+                ->whereIn('production_id', $productions->pluck('id'))
+                ->get();
+
+            $notGoods = DB::table('checksheet_not_goods')
+                ->whereIn('production_id', $productions->pluck('id'))
+                ->get();
+
+            // Format the data for the view
+            $formattedData = [];
+            foreach ($details as $detail) {
+                $shop = DB::table('mst_shops')->where('id', $detail->shop_id)->first();
+                $models = $productions->where('detail_id', $detail->id);
+
+                $formattedData[] = [
+                    'shop_name' => $shop->shop_name,
+                    'planning_manpower' => $detail->planning_manpower,
+                    'actual_manpower' => $detail->actual_manpower,
+                    'pic' => $detail->pic,
+                    'models' => $models->map(function ($model) use ($downtimes, $notGoods) {
+                        return [
+                            'model_id' => $model->model_id,
+                            'production_id' => $model->id,
+                            'planning_production' => $model->planning_production,
+                            'actual_production' => $model->actual_production,
+                            'balance' => $model->balance,
+                            'downtimes' => $downtimes->where('production_id', $model->id),
+                            'not_goods' => $notGoods->where('production_id', $model->id),
+                        ];
+                    }),
+                ];
+            }
+            dd($formattedData);
+            return view('checksheet.update', compact('header', 'formattedData', 'downtimes', 'notGoods', 'id', 'downtimeCategory'));
+        }
+
+        public function updateForm(Request $request){
+            dd($request->all());
         }
 }
