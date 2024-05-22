@@ -6,7 +6,7 @@
     <header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
         <div class="container-fluid px-4">
             <div class="page-header-content pt-4">
-                <h1 class="page-header-title">Checksheet Form: {{ $header->document_no }}</h1>
+
             </div>
         </div>
     </header>
@@ -65,9 +65,7 @@
                                                                         <tr>
                                                                             <th style="width: 120px;" >Model</th>
                                                                             <th style="width: 280px;" >Production</th>
-                                                                            <th style="width: 250px;">Downtime Category</th>
-                                                                            <th style="width: 150px;">Time</th>
-                                                                            <th>Remarks</th>
+                                                                            <th colspan="3">Downtime</th>
                                                                             <th>NG</th>
                                                                         </tr>
                                                                     </thead>
@@ -95,58 +93,117 @@
                                                                                         </div>
                                                                                     </div>
                                                                                 </td>
-                                                                                <td>
-                                                                                    <label>Downtime</label>
-                                                                                    <select disabled name="downtime_category[{{ $model['model_id'] }}][]" class="form-control form-control-sm chosen-select" id="downtime_category_{{ $key }}" multiple>
-                                                                                        @foreach($downtimeCategory as $category)
-                                                                                            <option value="{{ $category->id }}" {{ in_array($category->id, $model['downtimes']->pluck('cause_id')->toArray()) ? 'selected' : '' }}>{{ $category->category }}</option>
-                                                                                        @endforeach
-                                                                                    </select>
-                                                                                </td>
-                                                                                @php
 
-                                                                                    // Assuming $model contains the necessary data
-                                                                                    $downtimesCollection = collect($model['downtimes']->toArray());
-                                                                                    // Extract the "problem" value
-                                                                                    $downtime = $downtimesCollection->first();
+                                                                                <td colspan="3">
 
-                                                                                    $notGoodCollection = collect($model['not_goods']->toArray());
+                                                                                    @if ($model['downtimes']->isEmpty())
+                                                                                    <div class="downtime-container">
 
-                                                                                    $ng = $notGoodCollection->first();
-                                                                                    @endphp
-                                                                                <td>
-                                                                                    <div style="width: 250px;" class="row">
-                                                                                        <div class="col-md-6">
-                                                                                            <label>From</label>
-                                                                                            <input readonly value="{{ $downtime ? $downtime->time_from : '' }}" type="time" name="time_from[{{ $model['model_id'] }}][]" class="form-control form-control-sm">
+
+
+                                                                                        <div class="row">
+                                                                                            <div class="col-md-6">
+
+                                                                                                <label>Downtime</label><br>
+
+                                                                                                <select name="downtime_category[]" class="form-control form-control-sm mb-2" readonly>
+
+                                                                                                        <option value="">
+
+                                                                                                        </option>
+
+
+                                                                                                </select>
+
+                                                                                                <div class="row">
+                                                                                                    <div class="col-md-6">
+                                                                                                        <label>From</label>
+                                                                                                        <input readonly  type="time" name="time_from[]" class="form-control form-control-sm mb-2">
+                                                                                                    </div>
+                                                                                                    <div class="col-md-6">
+                                                                                                        <label>Until</label>
+                                                                                                        <input readonly  type="time" name="time_until[]" class="form-control form-control-sm mb-2">
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div class="col-md-6">
+                                                                                                <div class="row">
+                                                                                                    <div class="col-md-5">
+                                                                                                        <label>Cause</label>
+                                                                                                        <textarea readonly name="cause[]" class="form-control form-control-sm mb-2" rows="3"></textarea>
+                                                                                                    </div>
+                                                                                                    <div class="col-md-5">
+                                                                                                        <label>Action</label>
+                                                                                                        <textarea readonly name="action[]" class="form-control form-control-sm mb-2" rows="3"></textarea>
+                                                                                                    </div>
+
+                                                                                                </div>
+                                                                                            </div>
                                                                                         </div>
-                                                                                        <div class="col-md-6">
-                                                                                            <label>Until</label>
-                                                                                            <input readonly value="{{ $downtime ? $downtime->time_to : '' }}" type="time" name="time_until[{{ $model['model_id'] }}][]" class="form-control form-control-sm">
-                                                                                        </div>
+
                                                                                     </div>
-                                                                                </td>
-                                                                                <td>
-                                                                                    <div class="row">
-                                                                                        <div class="col-md-6">
-                                                                                            <label>Cause</label>
-                                                                                            <textarea readonly name="cause[{{ $model['model_id'] }}][]" class="form-control form-control-sm" rows="3">
-                                                                                                {{ $downtime ? $downtime->problem : '' }}
-                                                                                            </textarea>
+                                                                                    @else
+                                                                                    @foreach ($model['downtimes'] as $item)
+                                                                                    <div class="downtime-container">
+
+
+
+                                                                                        <div class="row">
+                                                                                            <div class="col-md-6">
+
+                                                                                                <label>Downtime</label><br>
+
+                                                                                                <select name="downtime_category[{{  $item->cause_id }}][]" class="form-control form-control-sm mb-2" readonly>
+                                                                                                    @foreach($downtimeCategory->where('id', $item->cause_id) as $category)
+                                                                                                        <option value="{{ $category->id }}" {{ in_array($category->id, $model['downtimes']->pluck('cause_id')->toArray()) ? 'selected' : '' }}>
+                                                                                                            {{ $category->category }}
+                                                                                                        </option>
+                                                                                                    @endforeach
+
+                                                                                                </select>
+
+                                                                                                <div class="row">
+                                                                                                    <div class="col-md-6">
+                                                                                                        <label>From</label>
+                                                                                                        <input readonly value="{{$item->time_from}}" type="time" name="time_from[{{  $item->time_from }}][]" class="form-control form-control-sm mb-2">
+                                                                                                    </div>
+                                                                                                    <div class="col-md-6">
+                                                                                                        <label>Until</label>
+                                                                                                        <input readonly value="{{$item->time_to}}" type="time" name="time_until[{{  $item->time_to }}][]" class="form-control form-control-sm mb-2">
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div class="col-md-6">
+                                                                                                <div class="row">
+                                                                                                    <div class="col-md-5">
+                                                                                                        <label>Cause</label>
+                                                                                                        <textarea readonly name="cause[{{ $item->problem }}][]" class="form-control form-control-sm mb-2" rows="3">{{$item->problem}}</textarea>
+                                                                                                    </div>
+                                                                                                    <div class="col-md-5">
+                                                                                                        <label>Action</label>
+                                                                                                        <textarea readonly name="action[{{ $item->action }}][]" class="form-control form-control-sm mb-2" rows="3">{{$item->action}}</textarea>
+                                                                                                    </div>
+
+                                                                                                </div>
+                                                                                            </div>
                                                                                         </div>
-                                                                                        <div class="col-md-6">
-                                                                                            <label>Action</label>
-                                                                                            <textarea readonly name="action[{{ $model['model_id'] }}][]" class="form-control form-control-sm" rows="3">
-                                                                                                {{ $downtime ? $downtime->action : '' }}
-                                                                                            </textarea>
-                                                                                        </div>
+
                                                                                     </div>
+                                                                                    @endforeach
+                                                                                    @endif
+
+
                                                                                 </td>
+
                                                                                 <td>
                                                                                     <label>Repair</label>
-                                                                                    <input readonly type="number" name="repair[{{ $model['model_id'] }}][]" class="form-control form-control-sm production-planning" style="width: 80px;" value="{{ $ng ? $ng->repair : 0 }}" min="0">
+                                                                                    @foreach ($model['not_goods'] as $item)
+                                                                                    <input readonly type="number" name="repair[{{ $item->repair }}][]" class="form-control form-control-sm production-planning" style="width: 80px;" value="{{ $item->repair}}" min="0">
+                                                                                    @endforeach
                                                                                     <label>Reject</label>
-                                                                                    <input readonly type="number" name="reject[{{ $model['model_id'] }}][]" class="form-control form-control-sm production-planning" style="width: 80px;" value="{{ $ng ? $ng->reject : 0 }}" min="0">
+                                                                                    @foreach ($model['not_goods'] as $item)
+                                                                                    <input readonly type="number" name="reject[{{ $item->reject }}][]" class="form-control form-control-sm production-planning" style="width: 80px;" value="{{$item->reject }}" min="0">
+                                                                                    @endforeach
                                                                                 </td>
                                                                             </tr>
                                                                         @endforeach

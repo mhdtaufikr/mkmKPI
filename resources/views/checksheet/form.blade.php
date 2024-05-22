@@ -206,7 +206,7 @@
                             </div>
                             <div class="col-md-2">
                                 <br>
-                                <button type="button" class="btn btn-sm btn-primary add-problem-row mt-2" data-model="${model}">+</button> <br>
+
                                 <button type="button" class="btn btn-sm btn-danger remove-problem-row mt-2">-</button>
                             </div>
                         </div>

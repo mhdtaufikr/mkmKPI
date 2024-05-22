@@ -116,7 +116,6 @@ class ChecksheetController extends Controller
             DB::beginTransaction();
 
             try {
-                // Assuming the checksheet header ID is provided in the request
                 $headerId = $request->id;
 
                 // 1. Insert data into checksheet_details table
@@ -139,7 +138,7 @@ class ChecksheetController extends Controller
                         $modelShopId = DB::table('mst_models')->where('model_name', $modelName)->value('shop_id');
 
                         if ($modelShopId === $shopId) {
-                            DB::table('checksheet_productions')->insert([
+                            $productionId = DB::table('checksheet_productions')->insertGetId([
                                 'detail_id' => $detailId,
                                 'model_id' => $modelId,
                                 'planning_production' => $planning[0] ?? null,
@@ -148,24 +147,35 @@ class ChecksheetController extends Controller
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ]);
-                        }
-                    }
-                }
 
-                // 3. Insert downtime data into checksheet_downtimes table
-                foreach ($request->downtime_category as $modelName => $categories) {
-                    $modelId = DB::table('mst_models')->where('model_name', $modelName)->value('id');
-                    $productionIds = DB::table('checksheet_productions')->where('model_id', $modelId)->pluck('id');
+                            // 3. Insert downtime data into checksheet_downtimes table
+                            if (isset($request->downtime_category[$modelName])) {
+                                foreach ($request->downtime_category[$modelName] as $index => $categoryId) {
+                                    // Ensure cause_id is not null
+                                    if ($categoryId !== null) {
+                                        DB::table('checksheet_downtimes')->insert([
+                                            'production_id' => $productionId,
+                                            'cause_id' => $categoryId,
+                                            'problem' => $request->cause[$modelName][$index] ?? null,
+                                            'action' => $request->action[$modelName][$index] ?? null,
+                                            'time_from' => $request->time_from[$modelName][$index] ?? null,
+                                            'time_to' => $request->time_until[$modelName][$index] ?? null,
+                                            'created_at' => now(),
+                                            'updated_at' => now(),
+                                        ]);
+                                    }
+                                }
+                            }
 
-                    foreach ($categories as $index => $categoryId) {
-                        foreach ($productionIds as $productionId) {
-                            DB::table('checksheet_downtimes')->insert([
+                            // 4. Insert not good (NG) data into checksheet_not_goods table
+                            DB::table('checksheet_not_goods')->insert([
                                 'production_id' => $productionId,
-                                'cause_id' => $categoryId,
-                                'problem' => $request->cause[$modelName][$index] ?? null,
-                                'action' => $request->action[$modelName][$index] ?? null,
-                                'time_from' => $request->time_from[$modelName][$index] ?? null,
-                                'time_to' => $request->time_until[$modelName][$index] ?? null,
+                                'model_id' => $modelId,
+                                'quantity' => ($request->repair[$modelName][0] ?? 0) + ($request->reject[$modelName][0] ?? 0),
+                                'repair' => $request->repair[$modelName][0] ?? null,
+                                'reject' => $request->reject[$modelName][0] ?? null,
+                                'total' => ($request->repair[$modelName][0] ?? 0) + ($request->reject[$modelName][0] ?? 0),
+                                'remark' => null,
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ]);
@@ -173,36 +183,13 @@ class ChecksheetController extends Controller
                     }
                 }
 
-                // 4. Insert not good (NG) data into checksheet_not_goods table
-                foreach ($request->production_planning as $modelName => $planning) {
-                    $modelId = DB::table('mst_models')->where('model_name', $modelName)->value('id');
-                    $productionIds = DB::table('checksheet_productions')->where('model_id', $modelId)->pluck('id');
-
-                    foreach ($productionIds as $productionId) {
-                        DB::table('checksheet_not_goods')->insert([
-                            'production_id' => $productionId,
-                            'model_id' => $modelId,
-                            'quantity' => $request->repair[$modelName][0] + $request->reject[$modelName][0] ?? null,
-                            'repair' => $request->repair[$modelName][0] ?? null,
-                            'reject' => $request->reject[$modelName][0] ?? null,
-                            'total' => $request->repair[$modelName][0] + $request->reject[$modelName][0] ?? null,
-                            'remark' => null,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    }
-                }
-
                 DB::commit();
-
                 return redirect('/checksheet')->with('status', 'Checksheet data saved successfully.');
             } catch (\Exception $e) {
-                dd($e);
                 DB::rollBack();
-                return redirect('/checksheet')->with('failed', 'Failed to save checksheet data. Please try again.');
+                return redirect('/checksheet')->with('failed', 'Failed to save checksheet data. Please try again. Error: ' . $e->getMessage());
             }
         }
-
 
         public function showDetail($id)
         {
@@ -253,7 +240,7 @@ class ChecksheetController extends Controller
                     }),
                 ];
             }
-
+            // dd($formattedData,$downtimes,$notGoods,$downtimeCategory);
             return view('checksheet.show', compact('header', 'formattedData', 'downtimes', 'notGoods','id','downtimeCategory'));
         }
 
