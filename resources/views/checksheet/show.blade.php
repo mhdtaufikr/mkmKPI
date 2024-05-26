@@ -26,7 +26,7 @@
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h3 class="card-title">Checksheet Form: {{ $header->document_no }}</h3>
+                                        <h3 class="card-title">Checksheet Form: {{ $header->document_no }} ({{$header->shift}})</h3>
                                         <button type="submit" class="btn btn-primary">Submit</button>
                                     </div>
                                     <div class="card-body">
