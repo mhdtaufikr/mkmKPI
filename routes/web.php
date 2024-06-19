@@ -41,7 +41,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checksheet/detail/{id}', [ChecksheetController::class, 'showDetail'])->middleware(['checkRole:IT']);
     Route::get('/checksheet/update/{id}', [ChecksheetController::class, 'updateDetail'])->middleware(['checkRole:IT']);
     Route::post('/checksheet/detail/update', [ChecksheetController::class, 'updateForm'])->middleware(['checkRole:IT']);
-
+    Route::post('/checksheet/export', [ChecksheetController::class, 'exportExcel'])->middleware(['checkRole:IT']);
 
     //Dropdown Controller
      Route::get('/dropdown', [DropdownController::class, 'index'])->middleware(['checkRole:IT']);

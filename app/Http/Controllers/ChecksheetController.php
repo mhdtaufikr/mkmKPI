@@ -13,6 +13,9 @@ use App\Models\MstShop;
 use App\Models\MstModel;
 use App\Models\ChecksheetNotGood;
 use DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ChecksheetExport;
+
 
 class ChecksheetController extends Controller
 {
@@ -265,7 +268,7 @@ public function updateDetail($id)
     $header = DB::table('checksheet_headers')->where('id', $id)->first();
 
     $downtimeCategory = MstDowntimeCause::get();
-    
+
     // Fetch related checksheet details
     $details = DB::table('checksheet_details')
         ->where('header_id', $id)
@@ -299,7 +302,7 @@ public function updateDetail($id)
                 $downtimeIds = $downtimes->where('production_id', $model->id)->pluck('id')->toArray();
                 $notGoodIds = $notGoods->where('production_id', $model->id)->pluck('id')->toArray();
                 $modelName = DB::table('mst_models')->where('id', $model->model_id)->value('model_name'); // Fetch model name
-        
+
                 return [
                     'model_id' => $model->model_id,
                     'model_name' => $modelName, // Include model name
@@ -313,7 +316,7 @@ public function updateDetail($id)
                         return [
                             'id' => $downtime->id,
                             'model_name' => $modelName, // Include model name
-                            'production_id' => $downtime->production_id, 
+                            'production_id' => $downtime->production_id,
                             'cause_id' => $downtime->cause_id,
                             'problem' => $downtime->problem,
                             'action' => $downtime->action,
@@ -327,7 +330,7 @@ public function updateDetail($id)
                 ];
             }),
         ];
-        
+
     }
     return view('checksheet.update', compact('header', 'formattedData', 'downtimes', 'notGoods', 'id', 'downtimeCategory'));
 }
@@ -335,16 +338,16 @@ public function updateDetail($id)
 
         public function updateForm(Request $request)
         {
-        
+
             DB::beginTransaction();
-            
+
             try {
                 $headerId = $request->id;
 
                 // 1. Update checksheet_details
                 foreach ($request->shop as $shop) {
                     $shopId = DB::table('mst_shops')->where('shop_name', $shop)->value('id');
-            
+
                     $detail = DB::table('checksheet_details')
                         ->where('header_id', $headerId)
                         ->where('shop_id', $shopId)
@@ -429,7 +432,7 @@ foreach ($request->downtime_category as $downtimeId => $categoryIdArray) {
                     'time_to' => $request->time_until[$downtimeId][0] ?? null,
                     'updated_at' => now(),
                 ]);
-            
+
         } else {
             // Insert new downtime record
             $newDowntimeId = DB::table('checksheet_downtimes')->insertGetId([
@@ -443,14 +446,12 @@ foreach ($request->downtime_category as $downtimeId => $categoryIdArray) {
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            
+
         }
     }
 }
+        }
 
-
-                    }
-                  
 
                       // Get the common keys between repair and reject arrays
                         $recordIds = array_keys($request->repair);
@@ -465,7 +466,7 @@ foreach ($request->downtime_category as $downtimeId => $categoryIdArray) {
                                 ->first();
 
                             $quantity = ($repairData[0] ?? 0) + ($rejectData[0] ?? 0);
-                       
+
                             if ($ng) {
                                 DB::table('checksheet_not_goods')
                                     ->where('id', $recordId)
@@ -493,9 +494,9 @@ foreach ($request->downtime_category as $downtimeId => $categoryIdArray) {
                         }
 
 
-                   
-                    
-                        
+
+
+
                 }
 
                 DB::commit();
@@ -504,6 +505,11 @@ foreach ($request->downtime_category as $downtimeId => $categoryIdArray) {
                 DB::rollBack();
                 return redirect('/checksheet')->with('failed', 'Failed to update checksheet data. Please try again. Error: ' . $e->getMessage());
             }
+        }
+
+        public function exportExcel(Request $request){
+             $month = $request->input('month');
+            return Excel::download(new ChecksheetExport($month), 'checksheet_export.xlsx');
         }
 
 
