@@ -11,6 +11,7 @@ use App\Http\Controllers\MstShopController;
 use App\Http\Controllers\MstModelController;
 use App\Http\Controllers\MstDowntimeController;
 use App\Http\Controllers\ChecksheetController;
+use App\Http\Controllers\ViewController;
 
 
 
@@ -42,6 +43,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checksheet/update/{id}', [ChecksheetController::class, 'updateDetail'])->middleware(['checkRole:IT']);
     Route::post('/checksheet/detail/update', [ChecksheetController::class, 'updateForm'])->middleware(['checkRole:IT']);
     Route::post('/checksheet/export', [ChecksheetController::class, 'exportExcel'])->middleware(['checkRole:IT']);
+
+    //View Controller
+    Route::get('/view/planning', [ViewController::class, 'plan'])->middleware(['checkRole:IT']);
+    Route::get('/view/actual', [ViewController::class, 'actual'])->middleware(['checkRole:IT']);
+    Route::get('/view/ng', [ViewController::class, 'ng'])->middleware(['checkRole:IT']);
+    Route::get('/view/std', [ViewController::class, 'std'])->middleware(['checkRole:IT']);
+
 
     //Dropdown Controller
      Route::get('/dropdown', [DropdownController::class, 'index'])->middleware(['checkRole:IT']);

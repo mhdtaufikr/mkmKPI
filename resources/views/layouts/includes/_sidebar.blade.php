@@ -13,6 +13,28 @@
                     <div class="nav-link-icon"><i class="fas fa-clipboard-list"></i></div>
                     Checksheet
                 </a>
+                <!-- Sidenav Menu Heading (Master)-->
+                <div class="sidenav-menu-heading">View</div>
+                <!-- Sidenav Accordion (Master)-->
+                <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#collapView" aria-expanded="false" aria-controls="collapView">
+                    <div class="nav-link-icon"><i class="fas fa-table"></i></div>
+                    View
+                    <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapView" data-bs-parent="#accordionSidenav">
+                   <nav class="sidenav-menu-nested nav">
+                       <a class="nav-link" href="{{url('/view/planning')}}">Planning</a>
+                    </nav>
+                    <nav class="sidenav-menu-nested nav">
+                       <a class="nav-link" href="{{url('/view/actual')}}">Actual</a>
+                    </nav>
+                    <nav class="sidenav-menu-nested nav">
+                       <a class="nav-link" href="{{url('/view/ng')}}">Not Good</a>
+                    </nav>
+                    <nav class="sidenav-menu-nested nav">
+                       <a class="nav-link" href="{{url('/view/std')}}">STD</a>
+                    </nav>
+                </div>
                  <!-- Sidenav Menu Heading (Master)-->
                  <div class="sidenav-menu-heading">Master</div>
                  <!-- Sidenav Accordion (Master)-->
